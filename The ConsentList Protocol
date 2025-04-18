@@ -1,0 +1,119 @@
+# ConsentList Protocol (CLP) for the AT Protocol Ecosystem
+
+## Overview
+The ConsentList Protocol (CLP) ensures user autonomy and consent when added to public or private lists—especially moderation or block lists—within decentralized social platforms like Bluesky. The protocol enables users to approve, deny, hide, or request removal from such lists, aligning with ethical and privacy-first design principles.
+
+---
+
+## Key Protocol Components
+
+### 1. List Inclusion Consent Layer (LICL)
+```json
+{
+  "@type": "app.clp.listInclusionRequest",
+  "listId": "at://did:example:list/mod-list-001",
+  "targetUser": "did:example:targetUser123",
+  "initiator": "did:example:listOwner789",
+  "listName": "Moderation Watch",
+  "listPurpose": "Community safety for XYZ topic",
+  "visibility": "public",
+  "timestamp": "2025-04-18T13:00:00Z"
+}
+```
+
+### 2. User-Controlled List Interaction Interface
+- When a user receives a `listInclusionRequest`, they are given the following options in-app:
+  - ✅ Approve inclusion
+  - ❌ Deny inclusion
+  - 🙈 Hide username (remain on list, not visible to public)
+  - 📩 Request removal later (create a pending status)
+
+### 3. List Metadata Layer (LML)
+```json
+{
+  "@type": "app.clp.listMetadata",
+  "listId": "at://did:example:list/mod-list-001",
+  "listName": "Moderation Watch",
+  "maintainer": "did:example:listOwner789",
+  "tags": ["moderation", "watchlist"],
+  "description": "Flagged users for moderation due to XYZ reasons.",
+  "consentBased": true,
+  "visibility": "public",
+  "createdAt": "2025-04-18T12:00:00Z"
+}
+```
+
+### 4. Decentralized Consent Ledger (DCL)
+- Every user interaction with a list is recorded in a tamper-resistant log.
+- Sample record:
+```json
+{
+  "@type": "app.clp.consentLogEntry",
+  "targetUser": "did:example:targetUser123",
+  "listId": "at://did:example:list/mod-list-001",
+  "action": "deny",
+  "timestamp": "2025-04-18T13:02:00Z",
+  "proof": "sha256-abcdef123456..."
+}
+```
+
+---
+
+## Optional Enhancements
+- **Ghost Mode**: Still on list for backend filtering, not visible to others.
+- **Re-add Notification**: Users notified if re-added after denial.
+- **Reputation for List Maintainers**: Tracks abuse of protocol or spam behavior.
+
+---
+
+## Implementation Guide for Site Developers
+
+### 📦 Use Case: Consent Feature Integration
+
+#### 💻 Front-End Example (JavaScript/TypeScript)
+```ts
+function requestListConsent(targetUserDID, listDetails) {
+  const payload = {
+    "@type": "app.clp.listInclusionRequest",
+    listId: listDetails.id,
+    targetUser: targetUserDID,
+    initiator: getCurrentUserDID(),
+    listName: listDetails.name,
+    listPurpose: listDetails.purpose,
+    visibility: listDetails.visibility,
+    timestamp: new Date().toISOString()
+  };
+
+  sendConsentRequestToUser(targetUserDID, payload); // this could use ATProto or your own internal API
+}
+```
+
+#### 🧩 Backend Suggestions
+- Create a simple `consentLogs` database table with:
+  - `listId`, `targetUser`, `action`, `timestamp`, `proof`
+- Respect consent decisions on all filtering and visibility actions.
+- Optional: Use a decentralized storage option (e.g., OrbitDB or ATProto repo).
+
+#### 🎨 UI Mockup Elements
+- Notification prompt with buttons:
+  - "Approve Inclusion"
+  - "Deny and Report"
+  - "Hide Me on This List"
+  - "Request Removal Later"
+- Dashboard page for users to:
+  - Manage active list requests
+  - View current consents and logs
+
+---
+
+## Governance and Adoption
+- Proposal to be submitted to the Bluesky developer forum.
+- Community governance through ATProto Standards Council.
+- Open-source SDKs to help developers integrate CLP.
+
+---
+
+## Summary
+The ConsentList Protocol empowers users to manage their visibility and participation across social lists in the Bluesky ecosystem. By leveraging decentralized identity, verifiable consent, and cryptographically logged interactions, it fosters safer, fairer, and more respectful online communities.
+
+
